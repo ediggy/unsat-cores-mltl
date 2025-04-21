@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+
+\newcommand\ltlf{{LTL}$_f$}
+\newcommand\mltl{{MLTL}}
+\newcommand\ltl{{LTL}}
+
+
+\begin{document}
+
+\section*{Towards a Notion of Unsatisfiable and Unrealizable Cores for LTL}
+\subsection*{Viktor Schuppan}
+\subsection*{Contribution}
+\begin{itemize}
+    \item Finding unsatisfiable cores in temporal logic
+\end{itemize}
+
+\subsubsection*{Methods}
+Find unsat cores from
+\begin{itemize}
+    \item Structure of Syntax tree
+    \item Converting formula into normal form
+    \item Pull out of proofs that show the formula is unsatisfiable
+\end{itemize}
+
+\subsubsection*{Previous work and Problem}
+Current implementations will only give that \[\phi = (\mathcal{G} \psi) \wedge (\mathcal{F} \psi')\] is the unsat core. Schuppan looks inside of $\mathcal{G} $ and $\mathcal{F}$ and all of the temporal operators.
+
+This work uses finer grained methods to say that "this little piece" is the problem.
+
+
+
+\section*{Computing minimal unsatisfiable core for LTL over finite traces \cite{niu_computing_2024}}
+\subsection*{Paper Layout}
+\begin{itemize}
+    \item Introduction
+    \item Preliminaries
+    \item Computing {LTL$_f$} minimal unsatisfiable core
+    \item Experimental evaluation
+    \item Concluding remarks
+\end{itemize}
+
+\subsection*{Introduction}
+\begin{itemize}
+    \item \ltlf is LTL but over finite traces
+    \item discusses how deeply studied \ltlf has been 
+            \begin{quote}
+                fundamental techniques for LTLf reasoning, e.g. satisfiability checking [citations], the translation to automata [citations] and synthesis [citations] have been investigated in depth.
+            \end{quote}
+    \item \begin{quote}
+        If the checking result turns out to be unsatisfiable, the specification is meaningless and has to be amended. Such procedure is called specification debugging and has been widely used in relevant domains \cite{shlyakhter2003debugging,standards2016ieee,luo2021identify}.
+    \end{quote}
+    \item presents the paper in the context of debugging AI specifications
+    \item defines minimum unsatisfiable core
+    \item \begin{quote}
+        presents dedicated approaches to compute MUC of LTLf formulas for further diagnosis. There are several works on ex
+    \end{quote}
+    \item \begin{quote}
+        The main goal of this paper is to conduct an efficient MUC solver for unsatisfiable LTLf formulas
+    \end{quote}
+    \item 
+\end{itemize}
+
+
+\subsubsection*{Mine vs theirs}
+\begin{itemize}
+    \item Mention how \ltlf is different from MLTL and how that is an important distinction
+    \item explain why \mltl cannot reduce to \ltlf
+    \item Also discuss how in-depth \mltl has been studied similar to how they did 
+    \item Talk about specification debugging and use the same references, but add more! :)
+\end{itemize}
+
+\section*{Towards a notion of unsatisfiable and unrealizable cores for LTL \cite{schuppan_towards_2012}}
+\begin{itemize}
+    \item \begin{quote}
+        notions of unsatisfiable cores for \ltl that arise from the syntax tree of an LTL formula
+    \end{quote}
+    \item unsatisfiable cores for \ltl by converting to Conjunctive normal form
+    \item unsatisfiable cores for \ltl by proofs of its unsatisfiability
+\end{itemize}
+
+
+\noindent\rule[7pt]{\linewidth}{0.4pt}
+
+
+
+\subsection*{IEEE Recommended Practice for Software Requirements Specifications \cite{standards2016ieee}}
+Software requirements specification best practices.
+Definition of satisfiability.
+
+\section*{Specification debugging}
+\subsection*{A Genetic Algorithm for Goal-Conflict Identification \cite{degiovanni2018genetic}}
+mentions unsatisfiability in specificaitons for their systems
+\begin{quote}
+    Identifying
+these circumstances early in the development process is of most
+importance, since it enables one to improve specifications, take
+countermeasures to these situations, and more deeply understand
+the roots for potential system goal unsatisfiability
+\end{quote}
+
+\subsection*{Goal-Conflict Detection Based on Temporal Satisfiability Checking \cite{degiovanni2016goal}}
+\begin{quote}
+    Our tableau-based approach to automatically detect goal
+conflicts receives a goal-oriented requirements specification
+composed of LTL formulas capturing the domain assumptions
+Dom, as well as goals G = {G1, . . . , Gn}. The process may
+determine that there are no conflicts, or that there exist
+either strong or weak conflicts. 
+\end{quote}
+
+\subsection*{Debugging overconstrained declarative models using unsatisfiable cores \cite{shlyakhter2003debugging}}
+\begin{quote}
+    This information can be a great help in discovering and localizing overconstraint, and in some cases pinpoints it immediately. 
+\end{quote}
+
+\subsection*{How to Identify Boundary Conditions with Contrasty Metric? \cite{luo2021identify}}
+\begin{quote}
+    The boundary conditions (BCs) have shown great potential in requirements engineering because a BC captures the particular combination of circumstances, i.e., divergence, in which the goals of the requirement cannot be satisfied as a whole.
+\end{quote}
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{ref}
+\end{document}

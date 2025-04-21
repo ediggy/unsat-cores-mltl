@@ -1,0 +1,725 @@
+%NOTE: NEED TO UPDATE POINTS FOR THE EXERCISES!!!
+
+%\documentclass[12pt]{article}
+\documentclass{elsarticle} %Because borrowing so much text from SymbolicMC paper
+
+\textwidth 6.5in
+\oddsidemargin 0.0in %this is a 1-inch margin
+\evensidemargin 1.0in %matching 1-inch margin
+
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{alltt}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{mathrsfs} %for \mathscr{} 
+\usepackage{amsthm}
+
+\newtheorem{defin}{Definition}
+\newtheorem{intuit}{Intuition}
+
+%Here are the commands included in elsarticle:
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newdefinition{rmk}{Remark}
+\newproof{pf}{Proof}
+\newproof{pot}{}
+
+\interfootnotelinepenalty=10000
+
+\renewcommand{\phi}{\varphi}
+\newcommand{\always}{\Box}
+\newcommand{\eventually}{\Diamond}
+\newcommand{\calL}{{\cal L}}
+
+\newcommand{\pspic}[2]{\scalebox{#1}{\includegraphics{#2}}}
+
+
+%Number the Exercises with one counter through multiple sections
+\newcounter{ExerciseCounter}
+\setcounter{ExerciseCounter}{1} %start counting at 1
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Figure Magic
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage{wrapfig}
+\renewcommand{\topfraction}{.95} %figures can take up at most 95% of the page before being alone
+\renewcommand{\bottomfraction}{.99} %figures can take up at most 99% of the page before being alone
+\renewcommand{\textfraction}{.1} %at most this this % of page will be text before making figure-only page
+\addtolength{\abovecaptionskip}{-3mm}
+
+
+%\usepackage{fullpage}
+%\usepackage{pslatex}
+%\usepackage{multicol}
+%\usepackage{epsfig}
+%\usepackage{float}
+%\pagestyle{empty}
+
+\begin{document}
+
+\title{Applied Formal Methods\\ Homework 2: Temporal Logic}
+
+\author{Prof. Kristin Yvonne Rozier}
+
+%\date{August 30, 2017; {\bf DUE: September 11, 2018}}
+
+\maketitle
+
+%{\bf Due date: September 17, 2019} %(1.5 weeks)
+
+
+\bigskip
+%\hrule
+
+%\ \\
+
+%\hrule
+
+
+\section{Advantages of Temporal Logic}
+
+In order to be able to analyze specifications of a system (aka descriptions of the behaviors the system should have) we have to encode them in a way that enables us to reason about them formally. 
+
+Once we have system specifications in temporal logic we can use them in all sorts of different kinds of analysis, from the design stage to the testing stage to the runtime stage of our system! For example, we might use model checking in the design stage to verify partial designs while we are creating them. Then during the verification stage we might use a code-level verifier to check our generated software; we might also use a modification of the model checking technology to generate test cases for system testing of both hardware and software. We can use runtime monitoring and runtime system health management methods during system execution time to analyze its behavior in real time and add an additional layer of assurance that we are adhering to our original specifications. The great thing is, in many cases the same set of temporal logic specifications are useful throughout all of these stages of system design and operation!
+
+\subsection{History of Temporal Logics}
+
+Continuous systems necessarily involve a notion of time. Propositional logic is not expressive enough to describe such real systems. Yet, English descriptions are even less precise once we involve time. Consider, for example, the following English sentences:
+\begin{itemize}
+\item I said I would see you on Tuesday.
+\item ``This is the worst disaster in California since I was elected.'' [California Governor Pat Brown]%, discussing a local flood
+%\item I will bring my bike tomorrow if it looks nice in the morning.
+\item ``When two trains approach each other at a crossing, both shall come to a full stop and neither shall start up again until the other has gone.'' [Kansas State Legislature, early 1890's]
+\end{itemize}
+
+As a result, Amir Pnueli introduced the notion of using temporal logics, which were originally developed by philosophers for investigating how time is used in natural language arguments, to reason about concurrent systems \cite{Pnu77}. (Burstall \cite{Bur74} and Kr\"oger \cite{Kro77} independently proposed the use of weaker forms of temporal reasoning about computer programs at roughly the same time.) Temporal logics are modal logics geared toward the description of the temporal ordering of events. For most safety-critical systems, tying the system model to an explicit universal clock is overkill; it exacerbates the state explosion problem without adding value to the verification process. It is sufficient simply to guarantee that events happen in a certain partial (or, in some cases, total) order. Temporal logics were invented for this purpose. Because they describe the ordering of events in time without introducing time explicitly, temporal logics are particularly effective for describing concurrent systems \cite{CGL93}.
+Temporal logics conceptualize time in one of two ways. Linear temporal logics consider every moment in time as having a unique possible future. Essentially, they reason over a classical timeline. In branching temporal logics, each moment in time may split into several possible futures. In essence, these logics view the structure of time as a tree, rooted at the current time, with any number of branching paths from each node of the tree.
+% \begin{wrapfigure}{r}{2in}
+% \begin{subfigure}
+% %  \begin{center}
+%     \includegraphics[width=1.5in]{figs/LTL_timeline.eps}
+% %  \end{center}
+%   \caption{Linear Temporal Logics}
+% \end{subfigure}
+% \begin{subfigure}
+% %  \begin{center}
+%     \includegraphics[width=1.5in]{figs/CTL_timeline.eps}
+% %  \end{center}
+%   \caption{Branching Temporal Logics}
+% \end{subfigure}
+% \caption{Two visions of the structure of time.}
+% \end{wrapfigure}
+
+% \begin{figure}[H]
+%   \centering
+%   \mbox{\subfigure[Linear Temporal Logic]{\epsfig{figure=figs/LTL_timeline.eps,width=0.5\textwidth}}\quad
+%     \subfigure[Branching Temporal Logic]{\quad\epsfig{figure=figs/CTL_timeline.eps,width=0.5\textwidth}}}
+%     \caption{Two visions of the structure of time.}
+%   \label{timelines}
+% \end{figure}
+
+\begin{wrapfigure}{r}{2in}
+\mbox{\subfigure[Linear Temporal Logic]{\epsfig{figure=figs/LTL_timeline.eps,width=2in}}}\\
+\mbox{\subfigure[Branching Temporal Logic]{\quad\epsfig{figure=figs/CTL_timeline.eps,width=2in}}}
+\caption{Two visions of the structure of time.}
+\end{wrapfigure}
+
+%temporal logics:
+%- are modal logics geared towards the description of the temporal ordering of events
+%- linear temporal logics every moment in time has a unique possible future
+%- branching temporal logics: each moment in time may split into several possible futures
+
+% possibly cite Lamport's sometimes and not never paper here as an example of revisions to the logics; name any other logical revisors
+Pnueli's historic 1977 paper \cite{Pnu77} proposed the logic LTL. This logic extended propositional logic with temporal operators $\mathcal{G}$ (for ``globally'') and $\mathcal{F}$ (for ``in the future''), which we also call $\Box$ and $\Diamond$, respectively, and introduced the concept of \emph{fairness}, which ensures an infinite-paths semantics. LTL was subsequently extended to include the $\mathcal{U}$ (``until'') operator originally introduced by Kamp in 1968 \cite{Kam68} and the $\mathcal{X}$ (``next time'') operator from the temporal logic $\mathscr{UB}$ (the \emph{unified} system of \emph{branching} time) \cite{BM81}. %Four years later, 
+In 1981, Clarke and Emerson extended $\mathscr{UB}$, thereby inventing the branching temporal logic they named Computational Tree Logic (CTL) and, with it, CTL model checking. 
+%Vardi and Wolper defined model checking for modal logics in 1984 \cite{VW84b} while Lichtenstein and Pnueli created LTL model checking in 1985 \cite{LP85}. 
+Lichtenstein and Pnueli defined model checking for LTL in 1985 \cite{LP85}. 
+(For a more detailed history of the technical developments which lead from Prior's early observations on time and Church's logical specification of sequential circuits to LTL and automata-theoretic model checking, see \cite{Var06b}.)
+The combination of LTL and CTL, called CTL$^*$, was defined by Emerson and Halpern in 1986, though there are currently no industrial model checkers for this language.\footnote{There was one research prototype CTL$^*$ model checker called AltMC ({\bf Alt}ernating Automata-based {\bf M}odel {\bf C}hecker). Visser and Barringer created AltMC in 1998 and explained how it could be integrated into the industrial model checker SPIN \cite{VB00}.}
+%The technique of symbolic model checking, which is the focus of this paper, was invented by McMil in '93? and then defined for LTL in year? 
+
+
+\section{Linear Temporal Logic}
+
+
+Linear Temporal Logic (LTL) reasons over linear traces through time. At each time instant, there is only one real future timeline that will occur. Traditionally, that timeline is defined as starting ``now,'' in the current time step, and progressing infinitely into the future. 
+
+
+{\bf Linear Temporal Logic} (LTL) formulas are composed of a finite set $Prop$ of atomic propositions, the Boolean connectives $\neg$, $\wedge$, $\vee$, and $\rightarrow$, and the temporal connectives $\mathcal{U}$ (until), $\mathcal{R}$ (release), $\mathcal{X}$ (also called $\ocircle$ for ``next time''), $\Box$ (also called $\mathcal{G}$ for ``globally'') and $\Diamond$ (also called $\mathcal{F}$ for ``in the future''). Intuitively, $\phi \ \mathcal{U} \ \psi$ states that either $\psi$ is true now or $\phi$ is true now and $\phi$ remains true until such a time when $\psi$ holds. Dually, $\phi \ \mathcal{R} \ \psi$, stated $\phi$ \emph{releases} $\psi$, signifies that $\psi$ must be true now and remain true until such a time when $\phi$ is true, thus releasing $\psi$. $\mathcal{X} \phi$ means that $\phi$ is true in the next time step after the current one. Finally, $\Box \phi$ commits $\phi$ to being true in every time step while $\Diamond \phi$ designates that $\phi$ must either be true now or at some future time step. We define LTL formulas inductively:
+\begin{defin}\label{LTL_Syntax}
+For every $p \in Prop$, $p$ is a formula. If $\phi$ and $\psi$ are formulas, then so are:
+
+\begin{tabular}{lllll}
+\ \ \ $\neg \phi$ \ \ \ &
+\ \ \ $\phi \wedge \psi$ \ \ \ &
+\ \ \ $\phi \rightarrow \psi$ \ \ \ &
+\ \ \ $\phi \ \mathcal{U} \ \psi$ \ \ \ &
+%\ \ \ $\mathcal{G} \phi$ \ \ \ \\
+\ \ \ $\Box \phi$ \ \ \ \\
+&
+\ \ \ $\phi \vee \psi$ \ \ \ &
+\ \ \ $\mathcal{X} \phi$ \ \ \ &
+\ \ \ $\phi \ \mathcal{R} \ \psi$ \ \ \ &
+%\ \ \ $\mathcal{F} \phi$ \ \ \ \\
+\ \ \ $\Diamond \phi$ \ \ \ \\
+\end{tabular}
+\end{defin}
+\noindent
+Furthermore, we define the closure of LTL formula $\phi$, $cl(\phi)$, as the set of all of the subformulas of $\phi$ and their negations (with redundancies, such as $\phi$ and $\neg \neg \phi$, consolidated). LTL formulas describe the behavior of the variables in $Prop$ over a linear series of time steps starting at time zero and extending infinitely into the future.\footnote{Though we will not discuss them here, some variations of LTL also consider time steps that have happened in the past. For example, we could add past-time versions of $\mathcal{X}$ and  $\mathcal{U}$ called $\mathcal{Y}$ (also called $\circleddash$ for ``previous time'' or ``yesterday'') and $\mathcal{S}$ (since), respectively. Past-time LTL was first introduced by Kamp in 1968 \cite{Kam68} but does not add expressive power to the future-time LTL defined here \cite{GPSS80}.}  We satisfy such formulas over \emph{computations}, which are functions that assign truth values to the elements of $Prop$ at each time instant \cite{Eme90}. In essence, a computation path $\pi$ satisfies a temporal formula $\phi$ if $\phi$ is true in the zeroth time step of $\pi$, $\pi_0$.
+
+\begin{defin}\label{LTL_Semantics}
+We interpret LTL formulas over computations of the form $\pi : \omega \rightarrow 2^{Prop}$, where $\omega$ is used in the standard way to denote the set of non-negative integers. We also use \emph{iff} to abbreviate "if and only if." We define $\pi, i \vDash \phi$ (computation $\pi$ at time instant $i \in \omega$ satisfies LTL formula $\phi$) as follows:
+\begin{itemize}
+\item $\pi, i \vDash p$ for $p \in Prop$ iff $p \in \pi(i)$.
+\item $\pi, i \vDash \neg \phi$ iff $\pi, i \nvDash \phi$.
+\item $\pi, i \vDash \phi \wedge \psi$ iff $\pi, i \vDash \phi$ and $\pi, i \vDash \psi$.
+\item $\pi, i \vDash \phi \vee \psi$ iff $\pi, i \vDash \phi$ or $\pi, i \vDash \psi$.
+\item $\pi, i \vDash \mathcal{X} \phi$ iff $\pi, i+1 \vDash \phi$.
+\item $\pi, i \vDash \phi \ \mathcal{U} \ \psi$ iff $\exists j \ge i$, such that $\pi, j \vDash \psi$ and $ \forall k, i \le k < j$, we have $\pi, k \vDash \phi$.
+\item $\pi, i \vDash \phi \ \mathcal{R} \ \psi$ iff $\forall j \ge i$, if $\pi, j \nvDash \psi$, then $\exists k$, $i \le k < j$, such that $\pi, k \vDash \phi$.
+\item $\pi, i \vDash \Box \phi$ iff $\forall j \ge i$, $\pi, j \vDash \phi$.
+\item $\pi, i \vDash \Diamond \phi$ iff $\exists j \ge i$, such that $\pi, j \vDash \phi$.
+\end{itemize}
+\noindent
+We take $\models(\phi)$ to be the set of computations that satisfy $\phi$ at time 0, i.e., $\{\pi : \pi,0\vDash\phi\}$. We define the \emph{prefix} of an infinite computation $\pi$ to be the finite sequence starting from the zeroth time step, $\pi_0, \pi_1, \ldots, \pi_i$ for some $i \ge 0$.
+\end{defin} 
+
+
+\begin{figure}
+\centering
+\fbox{
+\begin{minipage}{4.5in}
+
+{\bf Examples of LTL properties:}
+
+\begin{itemize}
+\item \emph{Liveness: ``Every request is followed by a grant''} \\
+$\Box(request \rightarrow \Diamond grant)$
+
+%\medskip \noindent
+\item \emph{Invariance: ``At some point, p will hold forever''} \\
+$\Diamond \Box p$
+
+%\medskip \noindent
+\item \emph{``p oscillates every time step''} \\
+$\Box ( (p \wedge \mathcal{X} \neg p) \vee (\neg p \wedge \mathcal{X} p) )$
+
+%\medskip \noindent
+\item \emph{Safety: ``p never happens''} \\
+$\Box \neg p$
+
+%\medskip \noindent
+\item \emph{Fairness: ``p happens infinitely often''} \\
+$(\Box \Diamond p) \rightarrow \phi$
+
+%\medskip \noindent
+\item \emph{Mutual exclusion: ``Two processes cannot enter their critical sections at the same time''} \\
+$\Box \neg(in\_CS_1 \wedge in\_CS_2)$
+
+%\medskip \noindent
+% CONSIDER ADDING PARTIAL CORRECTNESS FROM "Proving Liveness Properties of Concurrent Programs" page 16
+\item \emph{Partial correctness: ``If p is true initially, then q will be true when the task is completed''} \\
+$p \rightarrow \Box (done \rightarrow q)$
+
+%\medskip \noindent
+%\emph{Safety, again: ``If p is true now, then q will always be true''} \\
+%$p \rightarrow \Box q$
+
+%\medskip \noindent
+%\emph{Invariance: ``If p ever becomes true, it will remain true forever''} \\
+%$\Box(p \rightarrow \Box p)$
+
+%\medskip \noindent
+%\emph{Liveness: ``If p ever becomes true, then q will be true at the same time or later''} \\
+%$\Box(p \rightarrow \Diamond q)$
+
+\end{itemize}
+
+\end{minipage}
+}
+\label{LTLformulas}
+%\caption{Syntax of LTL and CTL}
+\end{figure}
+
+
+
+\paragraph{Equivalences} While we have presented the most common LTL syntax, operator equivalences allow us to reason about LTL using a reduced set of operators. In particular, the most common minimum set of LTL operators is $\neg$, $\vee$, $\mathcal{X}$, and $\mathcal{U}$. From propositional logic, we know that $(\phi \rightarrow \psi)$ is equivalent to $(\neg \phi \vee \psi)$ by definition and that $(\phi \wedge \psi)$ is equivalent to $\neg (\neg \phi \vee \neg \psi)$ by DeMorgan's law. We can define $(\Diamond \phi)$ as $(true \ \mathcal{U} \phi)$. (Similarly, $(\Box \phi) \equiv (false \ \mathcal{R} \ \phi)$.) The \emph{expansion laws} state that $(\phi \ \mathcal{U} \ \psi) = \psi \vee [ \phi \wedge \mathcal{X} ( \phi \ \mathcal{U} \ \psi) ]$ and $(\phi \ \mathcal{R} \ \psi) = \psi \wedge [ \phi \vee \mathcal{X} ( \phi \ \mathcal{R} \ \psi) ]$. The operators $\Box$ and $\Diamond$ are logical duals as $(\Box \phi)$ is equivalent to $(\neg \Diamond \neg \phi)$ and $(\Diamond \phi)$ is equivalent to $(\neg \Box \neg \phi)$. Finally, $\mathcal{U}$ and $\mathcal{R}$ are also logical duals. Since this last relationship is not intuitive, we offer proof below. (Incidentally, $\mathcal{X}$ is the dual of itself: $(\neg \mathcal{X} \phi) \equiv (\mathcal{X} \neg \phi)$.)  
+
+Informally, $\phi \ \mathcal{U} \ \psi$ signifies that either $\psi$ is true now (in the current time step) or $\phi$ is true now and for every following time step until such a time when $\psi$ is true. Note that this operator is also referred to as \emph{strong until} because $\psi$ \emph{must} be true at some time. Conversely, \emph{weak until}, sometimes included as the operator $\mathcal{W}$, is also satisfied if $\phi$ is true continuously but $\psi$ is never true. Formally, 
+\[\pi, i \vDash \phi \ \mathcal{W} \ \psi\mbox{ iff either }\forall j \ge i, \pi, j \vDash \phi \mbox{ or } \exists j \ge i\mbox{, such that }\pi, j \vDash \psi\mbox{ and }\forall k, i \le k < j\mbox{, we have } \pi, k \vDash \phi.\] 
+$\mathcal{R}$ is the dual of $\mathcal{U}$, so $\phi \ \mathcal{R} \ \psi = \neg(\neg \phi \ \mathcal{U} \ \neg \psi)$. We say that ``$\phi$ releases $\psi$'' because $\psi$ must be true now and, in the future, 
+%$\neg \psi \ \rightarrow \ \phi$ was previously true. %cleaner version below
+$\neg \psi$ implies $\phi$ was previously true. 
+Note that at that point in the past, both $\phi$ and $\psi$ were true at the same time and that $\phi$ may never be true, as long as $\psi$ is always true.
+%We use the following English definition for the $\mathcal{R}$ (\emph{release}) operator for LTL: $a \ \mathcal{R} \ b$ means that $b$ must be true now and, in the future, $\neg b \ \rightarrow \ a$ was previously true. (Note that at that point in the past, both $a$ and $b$ were true at the same time.) 
+%We can define $\mathcal{R}$ recursively: \[a \ \mathcal{R} \ b = b \wedge [ a \vee \mathcal{X}( a \ \mathcal{R} \ b)]. \]
+We can %also 
+define $\mathcal{R}$ in terms of the $\mathcal{U}$-operator using the following lemma, where iff is used in the standard way to abbreviate "if and only if."
+
+
+\begin{lem} \label{Rdef}
+$\neg (\neg a \ \mathcal{U} \ \neg b) = a \ \mathcal{R} \ b$.
+\end{lem}
+
+%\noindent
+\begin{pf}
+%{\bf Proof:} 
+We use the formal semantic definitions of $\mathcal{U}$ and $\mathcal{R}$, given in \cite{tempReason}.
+
+\begin{eqnarray*}
+\pi, i \models \xi \ \mathcal{U} \ \psi &\mbox{iff}& \mbox{for some } j \ge i, \mbox{ we have } \pi, j \models \psi \\
+&& \mbox{and for all } k, \ i \le k < j, \mbox{ we have } \pi, k \models \xi.\\
+\pi, i \models \neg(\xi) \ \mathcal{U} \ \neg(\psi) &\mbox{iff}& \mbox{for some } j \ge i, \mbox{ we have } \pi, j \models \neg(\psi) \\
+&& \mbox{and for all } k, \ i \le k < j, \mbox{ we have } \pi, k \models \neg(\xi).\\
+\pi, i \models \neg(\xi) \ \mathcal{U} \ \neg(\psi) &\mbox{iff}& (( \exists \ j \ge i : \  \pi, j \models \neg(\psi) ) \\
+&& \wedge ( \forall \ k, \ i \le k < j : \  \pi, k \models \neg(\xi) ) ).\\
+\pi, i \models \neg(\neg(\xi) \ \mathcal{U} \ \neg(\psi)) &\mbox{iff}& \neg(( \exists \ j \ge i : \  \pi, j \models \neg(\psi) ) \\
+&& \wedge ( \forall \ k, \ i \le k < j : \  \pi, k \models \neg(\xi) ) ).\\
+&\mbox{iff}& (\neg( \exists \ j \ge i : \  \pi, j \models \neg(\psi) ) \\
+&& \vee \neg ( \forall \ k, \ i \le k < j : \  \pi, k \models \neg(\xi) ) ).\\
+&\mbox{iff}& (( \forall \ j \ge i : \  \pi, j \not\models \neg(\psi) ) \\
+&& \vee ( \exists \ k, \ i \le k < j : \  \pi, k \not\models \neg(\xi) ) ).\\
+&\mbox{iff}& (\forall \ j \ge i : \  \pi, j \models \psi  \\
+&& \vee \exists \ k, \ i \le k < j : \  \pi, k \models \xi).\\
+&\mbox{iff}& (\forall \ j \ge i : \  \pi, j \not\models \psi  \\
+&& \rightarrow \exists \ k, \ i \le k < j : \  \pi, k \models \xi).\\
+&\mbox{iff}& \mbox{for all } j \ge i \mbox{ if } \pi, j \not\models \psi,  \\
+&& \mbox{then for some } k, \ i \le k < j \mbox{ we have } \pi, k \models \xi.\\
+&\mbox{iff}& \pi, i \models \xi \ \mathcal{R} \ \psi.
+\end{eqnarray*}
+%\qed
+\end{pf}
+
+
+\section{Visualizing LTL\protect\footnote{Some of the exercises and graphics in this section of the homework are borrowed with permission from Ian Barland, John Greiner, and Moshe Vardi.}}
+
+Another way to think of computation is as infinite traces of sensor signals. For example, you might be in the cockpit of an aircraft watching a display the values of signals for $p$ and $q$ that might look something like this:
+
+%% \begin{figure}[H]
+
+%%   \begin{center}
+%%     \includegraphics[width=\textwidth]{figs/always_if_p_q_timeline.png}
+%%   \end{center}
+
+%% \caption{A timing diagram for a computation $\pi$ with propositions $p$ and $q$. Each propositional variable's value during the trace is depicted as a line. When the line is high, the proposition is true; when the line is low, it is false.}
+%% \end{figure}
+
+\begin{figure}[H]
+  \begin{center}
+  \begin{minipage}[t]{\textwidth}
+    \begin{center}
+     \includegraphics[width=\textwidth]{figs/always_if_p_q_timeline.png}
+\caption{A timing diagram for a computation $\pi$ with propositions $p$ and $q$. Each propositional variable's value during the trace is depicted as a line. When the line is high, the proposition is true; when the line is low, it is false.}
+     \label{always_if_p_q_timeline}
+    \end{center}
+  \end{minipage}
+  \end{center}
+\end{figure}
+
+
+
+In this example, $p$ and $q$ are propositions from $Prop$. Since in the compuation $\pi$ we have $p$ being true at (for example) index 1, we write $\pi, 1 \vDash p$. In this diagram it is also the case that $\pi, 0 \vDash (p \vee q)$.
+
+Although a bit unintuitive at first, it will be convenient to convert all finite traces into infinite ones. To do the conversion, we simply envision that once the state-transition system (aka automaton) reaches its ostensibly last ($n$th) state, it languishes furiously in that state over and over:
+
+\begin{defin} {\bf Stutter-Extend}: 
+The finite trace $\pi_0, \ldots, \pi_n$ can be stutter-extended to the infinite trace $\pi_0, \ldots, \pi_n, \pi_n, \pi_n, \ldots$.
+\end{defin}
+
+%To ensure this still satisfies the definition of a trace (where successive states must obey the automaton's transition relation), it is often assumed that every state has a transition to itself. 
+Note that this convention precludes assuming that something must change between one state and the next, which is plausible when we are modeling asynchronous systems. 
+%This will be reflected in our formal logic below, which will have no built-in primitive for the-next-state
+
+
+
+%POSSIBLE SECTION HERE ON STATE FORMULAS VS PATH FORMULAS; SEE SECTION ON STATE FORMULAS IN MC MODULE FOR SOME MATERIAL
+
+Here are more examples of computations interpreted in graphical form:
+
+\begin{figure}[H]
+
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{figs/always_p_timeline.png}
+  \end{center}
+
+\caption{A generic computation $\pi$ satisfying $\pi, i \vDash \Box p$. Note that $p$ is true at time $i$ at all later times.}
+\end{figure}
+
+
+\begin{figure}[H]
+
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{figs/eventually_q_timeline.png}
+  \end{center}
+
+\caption{A generic computation $\pi$ satisfying $\pi, i \vDash \Diamond q$. Note that $q$ is true in some state $k$ after state $i$.}
+\end{figure}
+
+
+\begin{figure}[H]
+
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{figs/suntil_r_s_timeline.png}
+  \end{center}
+
+\caption{A generic computation $\pi$ satisfying $\pi, i \vDash r \ \mathcal{U}\ s$. Note that $r$ is true in states $i$ through $(k - 1)$.}
+\end{figure}
+
+
+
+\subsection{Exercise [45 points (3 points each)]}
+Decide whether each of these formulas is true or false for the following computation $\pi$:
+
+\begin{figure}[H]
+
+  \begin{center}
+    \includegraphics[width=\textwidth]{figs/always_if_p_q_timeline.png}
+  \end{center}
+
+\caption{A timing diagram for a computation $\pi$, and propositions $p$ and $q$.}
+\end{figure}
+
+\begin{enumerate}
+\item $\pi, 9 \vDash \Box q$
+\item $\pi, 9 \vDash \Box \neg p$
+\item $\pi, 0 \vDash \Box q$
+\item $\pi, 0 \vDash \Box(p \rightarrow q)$
+\item $\pi, 9 \vDash \Diamond p$
+\item $\pi, 9 \vDash \Diamond \neg p$
+\item $\pi, 0 \vDash \Diamond q$
+\item $\pi, 0 \vDash \Diamond \neg q$
+\item $\pi, 0 \vDash \Diamond (q \rightarrow p)$
+\item $\pi, 9 \vDash \Diamond (q \rightarrow p)$
+\item $\pi, 0 \vDash \Diamond \neg (p \rightarrow q)$ 
+\item $\pi, 0 \vDash (q \ \mathcal{U}\ p)$
+\item $\pi, 2 \vDash (q \ \mathcal{U}\ p)$
+\item $\pi, 5 \vDash (q \ \mathcal{U}\ p)$
+\item $\pi, 9 \vDash (q \ \mathcal{U}\ p)$
+\end{enumerate}
+
+
+\subsection{Exercise [6 points (3 points each)]}
+Give an English translation of the following LTL formulas. Try to give a natural wording for each, not just a transliteration of the logical operators.
+
+\begin{enumerate}
+\item $(\Diamond r \rightarrow (p \ \mathcal{U}\ r))$
+\item $\Box (q \rightarrow \Box \neg p)$
+\end{enumerate}
+
+\subsection{Exercise [78 points (6 points each)]}
+In the following, give an LTL formula that formalizes the given English wording. If the English is subject to any ambiguity, as it frequently is, describe how you are disambiguating it, and why. \emph{Hint:} it helps to draw timelines first and then check your formulas against the timelines to make sure they describe exactly the set of timelines you envision. %KYR: MANY of these are BADLY ambiguous, like not implying 'always' when it should be there!
+\begin{enumerate}
+\item $p$ is true.
+\item $p$ becomes true before $q$.
+\item $p$ will happen at most once.
+\item $p$ will happen at most twice.
+\item  The light always blinks. Use the following proposition: $p$ = the light is on. (You may not make any assumptions as to the number of time steps the light is on or off during any single 'blink,' only 'blinking' constitutes a continuous series of changes of state between 'on' and 'off.')
+\item  The lights of a traffic signal always light in the following sequence: green, yellow, red, and back to green, etc., with exactly one light on at any time. Use the following propositions: $g$ = the green light is on, $y$ = the yellow light is on, and $r$ = the red light is on.
+\item  Whenever a train is passing, the gate is down. (Use the following propositions: $p$ = train is passing; $g$ = gate is down.)
+\item   If a train is approaching or passing, then the light is flashing. (Use the following propositions: $a$ = train is approaching; $p$ = train is passing; $l$ = light is flashing.)
+\item   If the gate is up and the light is not flashing, then no train is passing or approaching. (Use the following propositions: $g$ = gate is down; $l$ = light is flashing; $a$ = train is approaching; $p$ = train is passing.)
+\item   If a train is approaching, the gate will be down before the next train passes.
+\begin{figure}[H]
+  \begin{center}
+     \includegraphics[width=0.8\textwidth]{figs/train_timeline1.png}
+  \end{center}
+\caption{A timing diagram for a possible computation $\pi$ with propositions $a$, $p$, and $g$ illustrating traces that satisfy the requirement ``if a train is approaching, the gate will be down before the next train passes.''}
+\end{figure}
+
+\item   If a train has finished passing, then later the gate will be up.
+\begin{figure}[H]
+  \begin{center}
+     \includegraphics[width=0.8\textwidth]{figs/train_timeline2.png}
+  \end{center}
+\caption{A timing diagram for a possible computation $\pi$ with propositions $p$, and $g$ illustrating traces that satisfy the requirement ``if a train has finished passing, then later the gate will be up.''}
+\end{figure}
+
+\item   The gate will be up infinitely many times.
+\item   If a train is approaching, then it will be passing, and later it will be done passing with no train approaching.
+\begin{figure}[H]
+  \begin{center}
+     \includegraphics[width=0.8\textwidth]{figs/train_timeline3.png}
+  \end{center}
+\caption{A timing diagram for a possible computation $\pi$ with propositions $a$, and $p$ illustrating traces that satisfy the requirement ``if a train is approaching, then it will be passing, and later it will be done passing with no train approaching.''}
+\end{figure}
+
+\end{enumerate}
+
+
+The Dining Philosophers Problem is a classic conundrum in mathematics. The idea is that a group of $N$ philosophers sit at a single round table for dinner. There are $N$ forks, one placed between each plate. To successfully eat each bite, a philosopher needs both of the adjacent forks. Thus, as one consequence, two adjacent philosophers cannot eat at the same time, since they cannot both have the fork in between them at the same time. The question is what strategies can the philosophers have such that each philosopher eventually eats. Typically, but not necessarily, we also require that each philosopher has the same strategy. Yes, this is a very silly way to eat, which is why some instances of the problem use chop sticks instead of forks as one clearly needs two chopsticks to effectively leverage them as utensils. 
+
+
+\subsection{Exercise [30 points (6 points each)]}
+
+ Using temporal logic, formally specify the following desired properties of solutions to the Dining Philosophers Problem. Use the following logic variables, where $0 \le i < N$:
+\begin{itemize}
+\item $l_i$: Philosopher $i$ has his/her left fork.
+\item $r_i$: Philosopher $i$ has his/her right fork.
+\end{itemize}
+For each question, your answer should cover exactly the given condition -- nothing more or less. You may assume $N=3$.
+\begin{enumerate}
+\item No fork is ever claimed to be held by two philosophers simultaneously.
+\item Philosopher $i$ gets to eat (at least once).
+\item Each philosopher gets to eat infinitely often.
+\item The philosophers don't deadlock. (The main difficulty is to conceptualize and restate ``deadlock'' within this specific model in terms of the available logic variables.) You may assume philosophers pick up two forks in some order, eat, and drop both forks. For example, one might pick up a single fork and then drop it. Or, the philosophers might be lazy and never pick up a fork.
+\item Describe a Dining Philosophers Problem run in which philosophers don't deadlock, but it is not the case that each philosopher gets to eat infinitely often.
+\end{enumerate}
+
+
+\section{Computational Tree Logic}
+
+\begin{figure}
+\centering
+\fbox{
+\begin{minipage}{4.5in}
+{\bf Linear Temporal Logic} (LTL) formulas reason about linear timelines:
+\begin{itemize}
+\item a finite set $Prop$ of atomic propositions
+\item Boolean connectives: $\neg$, $\wedge$, $\vee$, and $\rightarrow$
+\item temporal connectives:\\
+\begin{tabular}{ll}
+ $\mathcal{X} \phi$ & next time\\% & $\phi$ holds at time $i+1$ \\
+$\phi \ \mathcal{U} \ \psi$ & until\\% & $\psi$ holds now or $\phi$ holds now and in every state until $\psi$ holds \\  
+$\phi \ \mathcal{R} \ \psi$ & release \\%if $\forall j \ge i$, if $\pi, j \nvDash \psi$, then $\exists k$, $i \le k < j$, such that $\pi, k \vDash \phi$.
+$\Box \phi$ & also called $\mathcal{G}$ for ``globally''\\
+$\Diamond \phi$ & also called $\mathcal{F}$ for ``in the future''
+\end{tabular}
+\end{itemize}
+
+{\bf Computational Tree Logic} (CTL) reasons about branching paths:
+\begin{itemize}
+\item temporal connectives are always proceeded by path quantifiers:\\
+\begin{tabular}{ll}
+$\mathcal{A}$ & for all paths\\
+$\mathcal{E}$ & exists a path
+\end{tabular}
+\end{itemize}
+\end{minipage}
+}
+\label{LTLandCTL}
+\caption{Syntax of LTL and CTL}
+\end{figure}
+
+Computational Tree Logic (CTL) is a branching time logic that reasons over many possible traces through time. Historically, CTL was the first logic used in model checking \cite{CE81} and it remains a popular specification logic. Unlike LTL, for which every time instance has exactly one immediate successor, in CTL a time instance has a finite, non-zero number of immediate successors. A branching timeline starts in the current time step, and may progress to any one of potentially many possible infinite futures. In addition to reasoning along a timeline, as we did for linear time logic, branching time temporal operators must also reason across the possible branches. Consequently, the temporal operators in CTL are all two-part operators with one part specifying, similarly to LTL, the action to occur along a future timeline and another part specifying whether this action takes place on at least one branch or all branches. 
+
+%DRAW PICTURES OF LTL AND CTL TIMELINES HERE FOR CLARITY
+
+%Note: no R operator is defined for CTL here.
+
+{\bf Computational Tree Logic} (CTL) formulas are composed of a finite set $Prop$ of atomic propositions, the Boolean connectives $\neg$, $\wedge$, $\vee$, and $\rightarrow$, and indivisible quantifier pairings of the path quantifiers $\mathcal{A}$ (always, for all paths), and $\mathcal{E}$ (there exists a path), with the linear temporal connectives of LTL: $\mathcal{U}$ (until), %$\mathcal{R}$ (release), 
+$\mathcal{X}$ (also called $\ocircle$ for ``next time''), $\Box$ (also called $\mathcal{G}$ for ``globally'') and $\Diamond$ (also called $\mathcal{F}$ for ``in the future''). We define CTL formulas inductively:
+
+\begin{defin}\label{CTL_Syntax} 
+For every $p \in Prop$, p is a formula. If $\phi$ and $\psi$ are formulas, then so are:
+
+\begin{tabular}{llllll}
+\ \ \ $\neg \phi$ \ \ \ &
+\ \ \ $\phi \wedge \psi$ \ \ \ &
+\ \ \ $\phi \vee \psi$ \ \ \ &
+\ \ \ $\phi \rightarrow \psi$ \ \ \ &
+\ \ \ $\mathcal{A}(\phi \ \mathcal{U} \ \psi$) \ \ \ &
+\ \ \ $\mathcal{E}(\phi \ \mathcal{U} \ \psi$) \ \ \ \\
+%\ \ \ $\mathcal{AG} \phi$ \ \ \ \\
+%\ \ \ $\mathcal{EG} \phi$ \ \ \ \\
+\ \ \ $\mathcal{AX} \phi$ \ \ \ &
+\ \ \ $\mathcal{EX} \phi$ \ \ \ &
+\ \ \ $\mathcal{A}\Box \phi$ \ \ \ &
+\ \ \ $\mathcal{E}\Box \phi$ \ \ \ &
+%\ \ \ $\mathcal{A}(\phi \ \mathcal{R} \ \phi)$ \ \ \ &
+%\ \ \ $\mathcal{E}(\phi \ \mathcal{R} \ \phi)$ \ \ \ &
+%\ \ \ $\mathcal{AF} \phi$ \ \ \ \\
+%\ \ \ $\mathcal{EF} \phi$ \ \ \ \\
+\ \ \ $\mathcal{A}\Diamond \phi$ \ \ \ &
+\ \ \ $\mathcal{E}\Diamond \phi$ \ \ \ \\
+\end{tabular}
+\end{defin}
+\noindent
+CTL formulas describe the behavior of the variables in $Prop$ over a branching series of time steps starting at time zero and extending infinitely into the future. As for LTL, \emph{computations} are functions that assign truth values to the elements of $Prop$ at each time instant.
+
+\begin{defin}\label{CTL_Semantics} %[CHECK THIS!!!] %CHECK THIS: I MADE IT UP SO IT COULD BE WRONG
+%maybe mention here that this is equivalent to thinking of CTL over transition systems, like those described in the modeling section, instead of the computations like LTL? To make the definition as similar as possible to LTL, I choose sets of computations here.
+%Note: there's a definition of CTL using computations in the small blue "Systems and Software Verification" book which I could use instead
+We interpret CTL formulas over sets of possible computations of the form $\pi : \omega \rightarrow 2^{Prop}$. 
+Due to the branching nature of the logic, there may be many future paths possible from any one time step: $\pi_0, \pi_1, \pi_2, \ldots$ We will call the set of all of the possible paths from the current time step $\Pi$. 
+We define $\Pi, i \vDash \phi$ (set of possible computations $\pi_{0 \ldots m} \in \Pi$ at time instant $i \in \omega$ satisfies CTL formula $\phi$) as follows:
+\begin{itemize}
+\item $\Pi, i \vDash p$ for $p \in Prop$ if $p \in \Pi(i)$.
+\item $\Pi, i \vDash \neg \phi$ if $\Pi, i \nvDash \phi$.
+\item $\Pi, i \vDash \phi \wedge \psi$ if $\Pi, i \vDash \phi$ and $\Pi, i \vDash \psi$.
+\item $\Pi, i \vDash \phi \vee \psi$ if $\Pi, i \vDash \phi$ or $\Pi, i \vDash \psi$.
+
+\item $\Pi, i \vDash \mathcal{AX} \phi$ if $(\forall n) \pi_n, i+1 \vDash \phi$.
+\item $\Pi, i \vDash \mathcal{EX} \phi$ if $(\exists n) \pi_n, i+1 \vDash \phi$.
+
+\item $\Pi, i \vDash \mathcal{A}(\phi \ \mathcal{U} \ \psi)$ if $(\forall n)(\exists j \ge i)$, such that $\pi_n, j \vDash \psi$ and $ \forall k, i \le k < j$, we have $\pi_n, k \vDash \phi$.
+\item $\Pi, i \vDash \mathcal{E}(\phi \ \mathcal{U} \ \psi)$ if $(\exists n)(\exists j \ge i)$, such that $\pi_n, j \vDash \psi$ and $ \forall k, i \le k < j$, we have $\pi_n, k \vDash \phi$.
+
+%\item $\pi, i \vDash \phi \mathcal{R} \psi$ if $\forall j \ge i$, if $\pi, j \nvDash \psi$, then $\exists k$, $i \le k < j$, such that $\pi, k \vDash \phi$.
+%\item $\pi, i \vDash \phi \mathcal{R} \psi$ if $\forall j \ge i$, if $\pi, j \nvDash \psi$, then $\exists k$, $i \le k < j$, such that $\pi, k \vDash \phi$.
+
+\item $\Pi, i \vDash \mathcal{A}\Box \phi$ if $(\forall n)(\forall j \ge i)$, $\pi_n, j \vDash \phi$.
+\item $\Pi, i \vDash \mathcal{E}\Box \phi$ if $(\exists n)(\forall j \ge i)$, $\pi_n, j \vDash \phi$.
+\item $\Pi, i \vDash \mathcal{A}\Diamond \phi$ if $(\forall n)(\exists j \ge i)$, such that $\pi_n, j \vDash \phi$.
+\item $\Pi, i \vDash \mathcal{E}\Diamond \phi$ if $(\exists n)(\exists j \ge i)$, such that $\pi_n, j \vDash \phi$.
+\end{itemize}
+\end{defin} 
+
+
+% if examples of CTL formulas are needed here to match the LTL section, Wikipedia has some good suggestions
+
+\paragraph{Equivalences} The path quantifiers $\mathcal{A}$ and $\mathcal{E}$, representing universal and existential quantification over the branching paths are duals and can be defined in terms of each other. Similarly, $\Box$ and $\Diamond$ signify universal and existential quantification over time steps along a single paths and are therefore also duals. (Again, the $\mathcal{U}$-operator is \emph{strong until} because its second argument \emph{must} be true at some time.)
+These realizations lead us to the following set of semantic equivalences:
+
+%Other notes, left out for space/relevance:
+% Adequate set of CTL connectives is 3: {AX, EX}, {EG, AF, AU}, and EU -- proved in Mar01(A. Martin "Adequate sets of temporal connectives in CTL")
+
+\begin{itemize}
+\item $(\mathcal{A}\Diamond \phi) \equiv (\neg \mathcal{E}\Box (\neg \phi)) \equiv (\mathcal{A}(true \ \mathcal{U} \ \phi))$.
+\item $(\mathcal{A}\Box \phi) \equiv (\neg\mathcal{E}\Diamond(\neg \phi)) \equiv (\neg\mathcal{E}(true \ \mathcal{U} \ \neg \phi))$.
+\item $(\mathcal{E}\Diamond \phi) \equiv (\neg \mathcal{A}\Box (\neg \phi)) \equiv (\mathcal{E}(true \ \mathcal{U} \ \phi)$.
+\item $(\mathcal{E}\Box \phi) \equiv (\neg \mathcal{A}\Diamond (\neg \phi)) \equiv (\neg \mathcal{A}(true \ \mathcal{U} \ \neg \phi))$.
+\item $(\mathcal{AX}\phi) \equiv (\neg \mathcal{EX}(\neg \phi))$.
+\item $(\mathcal{EX}\phi) \equiv (\neg \mathcal{AX}(\neg \phi))$.
+\item $(\mathcal{A}[\phi \ \mathcal{U} \ \psi]) \equiv (\neg \mathcal{E}[(\neg \psi) \ \mathcal{U} \ (\neg \phi \wedge \neg \psi)]) \wedge (\neg \mathcal{E}\Box (\neg \psi))$.
+\end{itemize}
+
+%There is an automata-theoretic approach to branching time model checking, similar to the ideas described here for LTL. While we do not translate branching temporal formulas into nondeterministic tree automata due to the double exponential blow-up inherent in this process, we can translate them into alternating tree automata in linear time \cite{BVW94}. 
+
+
+
+
+\subsection{Exercise [60 points (6 points each)]}
+In the following, give a CTL formula that formalizes the given English wording. If the English is subject to any ambiguity, as it frequently is, describe how you are disambiguating it, and why. \emph{Hint:} it helps to draw pictures of time as a branching tree first and then check your formulas against your diagrams to make sure they describe exactly the set of branching traces you envision.
+\begin{enumerate}
+\item If we remove the support, necessarily next the structure will fall. (Hint: define a Boolean variable like $remove$ to indicate whether the support has been removed and another Boolean variable like $fall$ to indicate a fall occurring.) %ANSWER: remove -> BOX X fall 
+\item The system cannot be one way and immediately next time be the other way. (Variables: $one\_way$, $other\_way$)
+\item If the plane takes off it will certainly land. (Variables: $takeoff$, $land$) %AG (takeoff -> AF land)
+\item If the GPS fails, the UAS may possibly eventually become lost. (Variables: $fail$, $lost$) %ANSWER: fail -> E DIAMOND lost
+\item The aircraft will inevitably land. (Variable: $land$) %A DIAMOND land
+\item It might be the case that the air traffic controller sends a resolution next time. (Variable: $resolution$) %E X resolution
+\item Our Mars rover may possibly henceforth be buried in the sand. (Variable: $buried$) %E BOX buried
+\item We may possibly have to wait until the next wind storm clears the sand to communicate with our Mars rover. %E (! communicate U wind_storm)
+\item To resolve a TSAFE alert between Aircraft\_1 and Aircraft\_2, there could be a resolution maneuver generated for either Aircraft\_1, or Aircraft\_2, or both. (Variables: $alert$, $res1$, $res2$)
+%& 
+%$\tAG$ ((env.tsafe\_alert\_12!= Non $\to$ (tsafe.TSAFE\_res1 | tsafe.TSAFE\_res2)) $\land$
+%                   (tsafe.TSAFE\_res1 $\to$ (env.tsafe\_alert\_12!=Non | env.tsafe\_alert\_13!=Non)))
+\item If there is an AutoResolver alert between Aircraft\_1 and Aircraft\_2, and there are
+no more imminent alerts, there is always an option where
+the controller permits the AutoResolver resolution. %AG ((alert & ! bigger_alert) -> EG (send_resolution))
+\end{enumerate}
+
+
+
+
+%% \section{LTL vs CTL}ctl-1
+
+
+%% \begin{wrapfigure}{r}{1.5in}
+%%   \begin{center}
+%%     \includegraphics[width=1.5in]{figs/expressiveness.eps}
+%%   \end{center}
+%%   \caption{Venn Diagram: Expressiveness of Common Temporal Logics}
+%% \end{wrapfigure}
+%% %\begin{figure}
+%% %  \pspic{0.3}{figs/expressiveness.eps}
+%% %\end{figure}
+
+%% %From Ed Clarke's slides:
+%% %Branching time logic could not express certain natural fairness properties that can easily expressed in the linear time logic.
+%% %Linear time logic could not express the possibility of an event occurring at sometime in the future along some computation path.
+
+%% %Mention here the time complexities of CTL and LTL model checking and justify using LTL b/c of the kind of expressiveness.
+%% %CTL describes the many possible paths of an infinite computation tree of a nondeterministic program. 
+
+%% %     MAJOR POINTS:
+%% %1) expresses the properties we want to express
+%% %2) easier to specify with than CTL
+
+%% The logical expressiveness of LTL and CTL is incomparable \cite{Lam80}. Since CTL allows explicit existential quantification over paths, it is more expressive in some cases where we want to reason about the possibility of the existence of a specific path through the transition system model $M$, such as when $M$ is best described as a computation tree. 
+
+
+\section{CTL$^*$}
+
+Emerson and Halpern first invented the logic CTL$^*$ in 1983 \cite{EH86}. This logic combines the syntaxes of the two logics LTL and CTL. It includes all of the logical operators in LTL and both path quantifiers of CTL but does not have the CTL restriction that temporal operators must appear in pairs. Both LTL and CTL are proper subsets of CTL$^*$, as are all combinations of LTL and CTL formulas; CTL$^*$ is more expressive than both LTL and CTL combined. For example, the formulas $E(\Box\Diamond p)$ and $A(\Diamond\Box p) \vee A\Box(E\Diamond p)$ are both in CTL$^*$ but in neither LTL nor CTL.
+%Therefore, all CTL formulas, all LTL formulas, and all combinations of these are also CTL$^*$ formulas.
+
+However, this expressive power comes at a great cost. The model-checking problem for CTL$^*$ is PSPACE-complete \cite{SC85}, which the same general complexity as for LTL, though the algorithm is considerably more complex to implement and there are currently no model checkers for this logic. Indeed, for practical model-checking problems such as compositional verification and verification of open or reactive systems (i.e. those systems that interact with an environment) CTL$^*$ is dominated by LTL \cite{Var98a}. Furthermore, the simple task of specification debugging via satisfiability checking is 2EXPTIME-complete for CTL$^*$ \cite{VS85,EJ88}. Simply translating a CTL$^*$ specification into an automaton for model checking involves a doubly-exponential blow-up \cite{ES84}. So, despite the deceptive time complexity for the general model-checking problem, adding branching to LTL is not free. In practice, should LTL prove to be too limited to express a desired property, CTL$^*$ is almost certainly sufficient \cite{BBFLPPS01}. However, the lack of industrial model-checking tools that accept CTL$^*$ specifications is a deterrent to the use of this logic.
+
+%*CTL* formula that is neither in LTL or in CTL: EX(p) and AFG(p)
+%A(FG p) $\vee$ AG(EF p) (reason is obvious: one disjunct isn't in each of LTL and CTL, see above)
+%                                                     E[GF p]
+%    * CTL* formula that is in CTL and LTL: \ AG(p)
+%(Remark: When taking LTL as subset of CTL*, any LTL formula is implicitly prefixed with the path quantifier A)
+
+%- model checking for the full branching time logic CTL$^*$ is PSPACE-complete
+%- going from CTL$^*$ formulas to automata involves a doubly-exponential blowup [ES84]
+
+%% \section{Industrial Logics Based on LTL}
+%% \label{IndustrialLogics}
+
+%% %IS CTL* OMEGA-REGULAR??????
+
+%% In several cases, industrial companies have defined extensions of LTL, specialized for their verification needs. Usually these linear time logics add operators to make the expression of specific properties easier and to extend the specification language to full $\omega$-regularity. The optimal position in the trade-off between logical expressiveness and model checking time complexity remains under discussion. %maybe something about how there is no standard yet; this is still an active area of debate/research
+
+%% \begin{defin}
+%% An {\bf $\omega$-regular expression} is an expression of the form $\bigcup_i \alpha_i (\beta_i)^\omega$ where $i$ is non-zero and finite and $\alpha$ and $\beta$ are regular expressions over the alphabet $\Sigma$.
+%% \end{defin}
+
+%% We refer to the standard definition of a regular expression, comprised of the elements of the alphabet $\Sigma$, parentheses, and the operators $+$, $\cdot$, and $*$ for union, concatenation, and star-closure, respectively. An $\omega$-regular expression adds the exponent $\omega$ that, in some sense, extends the $*$-exponent since $a^*$ designates an arbitrary, possibly zero, finite number of repetitions of $a$ while $a^\omega$ designates an infinite number of repetitions of $a$.
+
+%% \begin{defin}
+%% An {\bf $\omega$-regular language} is one that can be described by an $\omega$-regular expression. Also, a language is $\omega$-regular if and only if there exists a B\"uchi automaton that accepts it. (We'll overview B\"uchi automata later; basically they are a fancy kind of state-transition system, or a graph with special properties governing its traversal.) The family of $\omega$-regular languages is closed under union, intersection, and complementation.
+%% \end{defin}
+
+%% LTL can express a strict subset of $\omega$-regular expressions; it can describe specifically the $*$-free $\omega$-regular events.  %Moshe cites Thomas' "A Combinatorial Approach to the Theory of omega-automata" for this but I couldn't find that paper... 
+%% For example, LTL cannot express the sentiment that a particular event must occur exactly every $n$ time steps of an infinite computation and that this event may or may not occur during any of the other time steps. %example from Wol83
+%% Wolper first pointed this out and defined Extended Temporal Logic (ETL), which augmented LTL with operators corresponding to right-linear grammars, thus expanding the expressiveness to all properties that can be described by $\omega$-regular expressions \cite{Wol83}. Vardi and Wolper followed this by proposing ETLs where the temporal operators are defined by finite $\omega$-automata, which provide useful tools for hardware specification \cite{VW94}. However, model checking with ETL involves a difficult complementation construction for B\"uchi automata \cite{Cou00}. %the hardware specification bit comes from the latest version of "final showdown"
+%% Banieqbal and Barringer and, separately, Vardi created a linear $\mu$-calculus by extending LTL with fixpoint operators, which allows for a more natural description of constructs like recursive procedures and modules in compositional verification \cite{BB87, Var88}. Sistla, Vardi, and Wolper's Quantified Propositional Temporal Logic (QPTL) avoids common user difficulties with fixpoint calculi and achieves $\omega$-regularity instead by allowing quantification over propositional variables but at the cost of a nonelementary time complexity \cite{SVW87}. Emerson and Trefler proposed dealing with real-time correctness properties while avoiding the nonelementary time complexity by using Real Time Propositional LTL (RTPLTL), which adds time bounds to temporal operators referencing multiple independent clocks but can be checked in time exponential in the size of the regular expression \cite{ET97}.
+
+%% %Note from ET97: apparently Alur and Henzinger invented Timed PTL too... but it has just one clock
+
+%% %\cite{FTL02}
+%% %As fixpoint calculi are notoriously difficult for users, we decided against the fixpoint
+%% %approach. Keeping the goal of implementability in mind, we also decided against a full
+%% %implementation of ETL and QPTL, as full QPTL has a nonelementary time complexity
+%% %[SVW87], while implementing full ETL, which explicitly incorporates B\"uchi automata,
+%% %requires a complementation construction for B\"uchi automata, still a topic under active
+%% %research [Fin01,KV01b]. Instead, FTL borrows from ETL, as well as PDL [FL79], by
+%% %extending LTL with regular events
+
+%% Verification engineers in industry have also extended LTL to suit their specific needs. After successful verification efforts from 1995 to 1999 using symbolic model checking with specifications in FSL, a home-grown linear temporal logic specialized for hardware checking \cite{Fix07}, Intel developed the formal specification language, ForSpec \cite{FTL02}. The temporal logic underlying ForSpec, called FTL, extends past-time LTL to add explicit operators for manipulating multiple clocks and reset signals, expressions for reasoning about regular events, and time bounds on the temporal operators that allow users to specify time windows during which an operator is satisfied. The cost of the increased expressivity of FTL is that checking satisfiability is EXPSPACE-complete. IBM developed their own ``syntactic sugar'' \cite{BBEFGR01} in parallel from the early 1990s. IBM's Sugar extends LTL with Sugar Extended Regular Expressions (SEREs), the ability to explicitly reference multiple independent clocks, and limited Optional Branching Extensions (OBEs) \cite{ES02}. Motorola's CBV and Verisity's Temporal \textbf{\textit{e}} \cite{Mor99} are also linear time logics that achieve full $\omega$-regularity by adding regular expressions and clock operations. In 2003, the standardization committee Accellera, considering these four industrial specification languages, announced the industry standard languages SystemVerilog Assertion (SVA) language \cite{VR05} and Property Specification Language (PSL), which is based chiefly on Sugar with heavy influence from ForSpec \cite{HW05, Var08}. It is worth noting that restricted variants of LTL have also proved useful for specializing the logic without increasing computational complexity. For example, Allen Linear Temporal Logic (ALTL) \cite{RB06} marries a restricted LTL, without $\mathcal{X}$-, $\mathcal{U}$-, or $\mathcal{R}$-operators, with Allen's temporal intervals \cite{All84}, but ALTL satisfiability checking is only NP-complete.
+
+%% %FormalCheck \cite{Kur94} also has the expressive power of $\omega$-automata... \cite{Kur98, HVG08}. It doesn't use a logic but templates (see Kurshan's ``Commercial Settings'' paper in OtherPeoplesPapers for best description
+%% % The linear time framework is not limited to using LTL as a specification language. FormalCheck uses automata on infinite words(i.e. B\"uchi automaton) as a specification instead and then uses the language containment approach to verification %From Showdown paper
+
+%% %VIS \cite{BHSSA96} has regular LTL specs w/Verilog system descriptions
+%% %Maude is an explicit-state LTL model checking engine
+
+%% %\cite{HW05} %PSL and SVA paper
+
+%% %industrial temporal logics based on LTL: ForSpec, developed by Intel, and PSL, developed by an industrial standards committee.\cite{Var08}
+
+%% %taking out for the homework... In summary, the industrial languages described in this section are all based on LTL and use model checking methods similar to those described in this paper. Thus, insights into LTL model checking extend to all of these languages. 
+%% %The industrial language, PSL and SVA, are very rich language. It is very difficult to
+%% %do though research on them. On the other hand, all these languages use LTL as the
+%% %base language. The questions you are asking, for example, fussy vs sloppy, or YAMC vs
+%% %SPOT encoding, arise both in LTL and in the industrial language. Thus, LTL is a good
+%% %proxy for these languages.
+%% %- Moshe
+
+
+
+%Declare the bibliography
+\bibliographystyle{plain}
+\bibliography{SymbolicMC,ok,cav} %,SPIN2007_orig
+%\bibliography{ok}
+
+
+
+\end{document}

@@ -1,0 +1,252 @@
+\documentclass{article}
+\usepackage{amsthm,
+            xcolor,
+            algpseudocode,
+            algorithm}
+
+
+
+\begin{document}
+
+\section*{Research Plan}
+What would make a unsat core tool usable?
+\begin{enumerate}
+    \item For a lot of specifications, find conflicts
+    \item Maybe pointing out when specifications are unnecessairly complex\dots
+    \item 
+\end{enumerate}
+
+
+Create benchmarks for LTL and MLTL\\
+LTL I will use SPOT.\\
+MLTL I will use WEST?\\
+
+The goal is to end up with a robust set of unsat formulas.\\
+by ``Robust'', I mean over 200 formulas for one ``Example'', similar to eurail, but open source.
+
+I think I want about 3 unsat examples for the datasets, based on common formulas (from Rozier's work and the past presentation I made, in addition to any open-source ltl requirement databases I can find (Schuppan has an elevator example)).
+
+Use that database to create/test my tool?
+
+Use that database to test understandability of my visuals.
+
+Use that database to exemplify the importance of the unsat cores (remember the reasons that Chris said for planning).
+
+\section*{Current Work}
+\subsection*{Mini-Sat Solver}
+I'm building a mini-sat solver to be included in the final unsat core tool. The purpose of building my own if for 2 reasons. 1: I would like to know how sat solvers work so I can use them in the future. 2: Having an internal sat solver is better for "download and run" usability because it packages everything up in one place. (may wrap a sat solver api in the future, but this is what I'm doing right now.)
+
+\subsubsection{Features}
+\begin{itemize}
+    \item Accept a CNF formula input
+    \item Parse input into an internal structure
+    \item Run basic DPLL style sat solver
+    \item display whether the formula is SAT or UNSAT
+    \item if SAT: show a model
+    \item if UNSAT: Show unsat core
+\end{itemize}
+
+\subsubsection{Pseudocode, Logic, Proof of Correctness}
+
+Mini-Sat solver will
+\begin{enumerate}
+    \item parse into clauses
+    \item identify the variables
+    \item generate \textbf{every} possible truth assignment (yeah, I know...)
+    \item Check if there exists one assignment that makes every clause True
+    \item if yes $\rightarrow$ Sat assignments. If no $\rightarrow$ "unsat"
+    \begin{itemize}
+        \item the unsat core will be in a different algorithm
+    \end{itemize}
+\end{enumerate}
+
+\begin{algorithm}
+    \caption{Mini-Sat Solver}\label{alg:cap}
+    \begin{algorithmic}
+    \State \textbf{Input:}CNF \& NNF Algorithm with less than 3 variables and only !,\&,$\vert$
+    \State \textbf{Output:} Satisfiable Assignments or an Unsat Core
+
+    \end{algorithmic}
+    \end{algorithm}
+
+    \begin{algorithm}
+        \caption{Parse Formula}
+        \begin{algorithmic}
+        \State \textbf{Input:}CNF \& NNF Algorithm with less than 3 variables and only !,\&,$\vert$ \Comment ex. ``(A $\vert$ B) \& (!A $\vert$ C)"
+        \State \textbf{Output:} Nested list of all variables in each clause
+        \State clauses = array of clauses split on \& \Comment ex. [[``A $\vert$ B''], [``!A $\vert$ C'']]
+        \State variables = array of variables split on $\vert$ \Comment ex.[[``A'',``B''],[``!A'',``C'']]
+        \State \textbf{return variables} 
+        \end{algorithmic}
+    \end{algorithm}
+
+    \begin{algorithm}
+        \caption{Get Variables}
+        \begin{algorithmic}
+        \State \textbf{Input:}Nested List of Variables \Comment ex.[[``A'',``B''],[``!A'',``C'']]
+        \State \textbf{Output:} List of unique variables \Comment ex.[``A'',``B'',``C'']
+        \State unique\_variables  = []
+        \While{original list is not empty}
+        \State temp\_variable = curent variable in list
+        \If{temp\_variable starts with ``!''}
+            \State remove ``!''
+        \EndIf
+        \If{Variable not in unique\_variables}
+            \State Add Variable to unique\_variables
+        \EndIf
+        \EndWhile
+        \State \textbf{return unique\_variables} 
+        \end{algorithmic}
+    \end{algorithm}
+
+
+\subsubsection*{design decisions}
+\begin{itemize}
+    \item React Framework, common and usable across all platforms. Other Devs can modify it without too much additional learning
+    \item Input type, same as java and javascript because developers will be used to similar style of logical equivalance
+    \begin{itemize}
+        \item || or
+        \item \&\& and
+        \item ! not
+        \item == equal
+        \item != not equal
+    \end{itemize}
+    \item input type will be expanded to accept single words (python style) and single characters '\&' instead of '\&\&' so people can write their formulas however they want
+    \item I will not allow implies and iff, but I will provide equivalances in the "how to" menu for people to convert with.
+    \item I am rejecting more than 3 variables and any formula that is not in CNF
+\end{itemize}
+
+\subsubsection*{Done}
+\begin{itemize}
+    \item React App created
+    \item React App takes input and outputs the same input :)
+    \item Backend for mini-sat solver is created (no logic, but it's running :))
+    \item Connection from the back end to the front end when submitting a formula
+\end{itemize}
+
+\subsubsection{Working on}
+\begin{itemize}
+    \item Basic Sat Solving Logic
+\end{itemize}
+
+
+\section*{Introduction}
+It is well known that early system design is a critical moment in the development process. Part of that early-stage system design is requirements elicitation and debugging. During this time, engineers and designers don't have a full system model yet, making requirements debugging difficult, and model checking impossible. It is widly recognized that bugs not found in early stages of development will exponentally increase cost of repairing as the project progresses. So it's critical to write, check, and debug your requirements as early as possible.
+
+Industries like aerospace, trains, robotics, other safety-critical industries systems need to respond over time. Example: If this button is pressed, the train door should close within 5 seconds" (use a better safety critical example, possibly one of roziers Air traffic control requirements), which is exactly what Linear Temporal Logic is built for.
+
+[add something to introduce LTLf, MTL, and MLTL]
+
+Current requirements validation:
+\begin{itemize}
+    \item Model checking (if the system model satisfies the requirements), requires a model (what the system does) and the requirements(what it should do).
+    \item Vacuity Checking, so that your requirement isn't trivially satisfied. (If A happens, then B should happen, and A never happens) <- satisfied, and maeningless.
+    \item Coverage: Measures how much of the model is actually tested by the requirements
+\end{itemize}
+
+\subsection*{What do we do when we don't have a model?}
+\paragraph{Satisfiability \& Realizability}
+
+\textbf{satisfiability:}
+    \emph{Are these requirements even logically \textbf{possible} to satisfy?}
+
+\textbf{Realizability}
+    \emph{Is there a way to build a system thay will always follow the rules?}
+Both of these checks work with requirements and without a system model.
+
+\subsubsection*{The Problem}
+Requirements can be unsatisfiable
+Checking requirements of real systems by hand is impossible because of their size (Find some examples of systems by looking up why requirements checkers were made)
+
+
+
+
+\section*{Satisfiability (SAT)}
+
+\textbf{SAT:}
+    \emph{Assigning True or False to variables so that a whole logical formula becomes True.}
+
+\textbf{unsatisfiability:}
+    \emph{All possible combinations of True and False for all variables result in the formula being False.}
+
+\paragraph{Relevance to My Paper}
+Sat and Unsat ask if there is a contradiction. Unsat for LTL asks the same question but is more complex because it is over time. Unsat for LTLf is more complex because it reasons over finite LTL. Unsat for MLTL asks the same question but is more complex because it reasons over specific time steps.
+
+\subsection*{SAT Solving}
+\paragraph{Methods} involve \textbf{Clever search and pruning}
+
+
+\section*{Unsat Cores}
+\textbf{Unsatisfiable Core:}
+    \emph{A part of a formula that makes satisfiability impossible.}
+\begin{itemize}
+    \item Useful for:
+    \begin{itemize}
+        \item \textbf{Debugging}
+        \item \textbf{Faster checking} in model checkers
+        \item \textbf{Certifying} that something is truly unsatisfiable
+    \end{itemize}
+\end{itemize}
+
+
+
+
+
+
+\section*{Linear Temporal Logic}
+
+
+\section*{My Ideas}
+
+The enitre project is about usability\\
+Internal SAT Solver - So people don't have to download their own sat solver.
+(Part of "download and run" capabilities)
+
+I'm going to publish guidelines for making your formal methods tools usable.
+If your tools meets these standards, you get to have a mark of approval :)
+
+
+
+\begin{enumerate}
+    \item MLTL Syntax trees \textcolor{red}{SYNTAX TREES DO NOT CAPTURE TIME IN ANY REASONABLE WAY, SCHUPPAN IS AN IDIOT, JUST TRY DOING IT WITH UNTIL} A possible research insight would be why U and R break syntax trees.... If I want Schuppan to hate me
+    \begin{enumerate}
+        \item That being said, Could still probably do a syntax tree definition form MLTL while acknowledging the lack of ability to use it for anything more complex than F and G
+        \item Unless, you can express until and release in terms of F and G
+    \end{enumerate}
+    \item Sat Solvers can already extract a core subset of the clauses (unsat cores)
+\end{enumerate}
+
+For usability, we need to determine if a (set of) requirements is satisfiable to begin with. This may already be possible with model checkers (for MLTL?)
+
+\subsection*{Representation of Unsat Cores}
+Given the formula \[\phi = (G(p \wedge q)) \wedge (F(\neg p \wedge r))\]
+The main components that make the core unsatisfiable are
+\[ [p, \wedge, \neg p, G, F]\]
+These components by themselves are not indicitave of unsatisfiability, because we could have \[G(F(p) \wedge F(\neg p))\]
+Which is satisfiable. The important part is how the components are ordered.
+\subsubsection*{UC as sets of sub formulas}
+Would be presented as the sub formula \[SF(phi) = {G(p\wedge q) \wedge F(\neg p \wedge r), G(p \ wedge q), F(\neg p \wedge r), p, \neg p, q, r}\]
+and the sub formulas that make the unsat core possible
+
+\[UC(phi) = {G(p\wedge q) \wedge F(\neg p \wedge r), G(p \ wedge q), F(\neg p \wedge r), p, \neg p}\]
+
+\paragraph*{The problem} with this method, is that it is not immediately understandable and by examination of this simple unsat problem, would not scale very well.
+
+\subsection*{UC as reduced versions of the original formula}
+This option would present the unsat core as a version of the formula that is not logically equivalent to the original formula, but more immediately points out the cause of the unsatisfiability.
+
+\[UC(\phi) = G(p) \wedge F(\neg p)\]
+
+\paragraph{The problem} with this is that it does not give context of where the unsatisfiable parts are located in a formula. This may not be scalable, but that might not be a problem, depending on how formulas are written in practice.
+
+\subsection*{UC as color coded unsatisfiability}
+\[UC(\phi) = (\textcolor{red}{G}(\textcolor{red}{p} \wedge q)) \textcolor{red}{\wedge} (\textcolor{red}{F}(\textcolor{red}{\neg p} \wedge r))\]
+
+Which literally highlights the parts of the formula that are causing unsatisfiability, while giving context for the location of unsatisfiability. I like this one because it keeps equivalance, and highlights problems.
+
+\paragraph{The problem} is that if there are multiple variables or conjuntions that cause unsatisfiability, how do you enumerate that?
+
+\paragraph{A possible solution} could be to create a UI where you can "show all" problems, or toggle "show one problem at a time" with buttons to switch between problems.
+
+
+\end{document}
