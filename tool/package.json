@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "z3-solver": "^4.15.3"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}
