@@ -1,12 +1,13 @@
-import { checkSat } from "./z3.js"
-
+const { checkSat } = require("./z3.js");
 
 // QX procedure: entry point
-export async function QX(A) {
+async function QX(A) {
     if (A.length === 0) {
         return [];
     } 
     if (await checkSat(A)) {
+        test = await checkSat(A)
+        console.log(test)
         return "No conflict set";
     } 
     else {
@@ -15,7 +16,7 @@ export async function QX(A) {
 }
 
 // QX' procedure: recursive conflict finding
-export async function QXprime(d, A, B) {
+async function QXprime(d, A, B) {
     if (d.length > 0 && !(await checkSat(B))) {
         return [];
     }
@@ -36,16 +37,18 @@ export async function QXprime(d, A, B) {
 }
 
 
+async function main(){
 
+    const user_array = ["c&a","!c","b","a","!b"]
 
-const empty_array = []
+    // console.log(await checkSat(unsat_array));
 
-const unsat_array = ["c","b","a","!a","!b"]
+    // console.log(QX(sat_array,empty_array))
+    const result = await QX(user_array)
+    console.log("Final unsat core: ", result)
+    // console.log(QX(empty_array,empty_array))
 
-const sat_array = ["sat"]
+}
 
-// console.log(await checkSat(unsat_array));
+main()
 
-// console.log(QX(sat_array,empty_array))
-console.log("Final unsat core: ", await QX(unsat_array, empty_array))
-// console.log(QX(empty_array,empty_array))
