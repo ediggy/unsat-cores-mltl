@@ -1,3 +1,6 @@
+// TODO: Look up Explainability Certificate in model checking (Kind2) and make this tool a first stab at an explainability certificate :)
+// Case study in "what is useful" - make this a section in related work
+
 const { checkSat } = require("./z3.js");
 
 // QX procedure: entry point
@@ -39,7 +42,7 @@ async function QXprime(d, A, B) {
 
 async function main(){
 
-    const user_array = ["c&a","!c","b","a","!b"]
+    const user_array = ["!c | b","b","a","!b","c & a"]
 
     // console.log(await checkSat(unsat_array));
 
