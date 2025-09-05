@@ -42,7 +42,7 @@ async function QXprime(d, A, B) {
 
 async function main(){
 
-    const user_array = ["!c | b","b","a","!b","c & a"]
+    const user_array = ["G[0,2](a)","G[1,3](b)","F[0,2](!a & !b)"]
 
     // console.log(await checkSat(unsat_array));
 
