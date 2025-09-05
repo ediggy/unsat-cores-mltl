@@ -38,16 +38,25 @@ async function checkSat(formulas) {
      * 
      * @param {Array|string} tree - AST node (string for variable, array for operators)
      * @param {number} [t=0] - Current time step for temporal expansion.
-     * @returns 
+     * @returns {Object} - A Z3 Boolean expression that represents the formula at this time step
      */
     function translate(tree, t=0) {
+        // If the tree is a variable name line "a" or "b"
         if (typeof tree === 'string') {
-          const key = `${tree}@${t}`;       // unique key per timestep
+          
+          // Make it timestep aware: "a" at t=0 -> "a@0" (unique key per timestep)
+          const key = `${tree}@${t}`;   
+          
+          // If this variable doesn't exist yet, create a new Z3 Bool with this key.
           if (!(key in vars)) vars[key] = ctx.Bool.const(key);
+          
+          // Return the Z3 variable object.
           return vars[key];
         }
 
+        // Otherwise the node is an operator with arguments.
         const [op, ...args] = tree;
+
 
         switch(op) {
           case '!': return ctx.Not(translate(args[0], t));
@@ -75,15 +84,18 @@ async function checkSat(formulas) {
           default: throw new Error('Unknown op: ' + op);
         }
       }
-
+    
+    // Add each parsed formula to the Z3 solver we created earlier.
     for (const tree of astFormulas) {
       solver.add(translate(tree))
     }
 
+    // Ask Z3 whether the formulas are satisfiable
     const result = await solver.check();
     return result.toString() === "sat"; //true for sat, false for unsat
 }
 
+// Export the checkSat function for use in other Files
 module.exports = { checkSat };
 
 async function main(){
