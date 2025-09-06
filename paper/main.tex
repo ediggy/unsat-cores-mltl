@@ -51,12 +51,64 @@
 \end{itemize}
 
 \chapter{System Design and Implementation}
+
 \begin{itemize}
   \item Tool architecture: backend solver + frontend (React).
   \item Input format: traces and specifications.
   \item Workflow: trace $\rightarrow$ solver $\rightarrow$ unsat core.
   \item Example run with toy problem.
 \end{itemize}
+
+\section{Overview of the Tool Architecture}
+This section provides a high-level description of the tool workflow:
+\begin{quote}
+Input $\rightarrow$ Parser $\rightarrow$ QuickXplain $\rightarrow$ Z3 $\rightarrow$ Output
+\end{quote}
+
+\section{Input: Human-Readable MLTL Requirements}
+\begin{itemize}
+  \item Present syntax and examples of user input formulas.
+  \item Explain why a parser is required: to bridge human-readable MLTL into solver-compatible formats.
+\end{itemize}
+
+\section{Parsing and Translation}
+\subsection{Parser}
+\begin{itemize}
+  \item Converts human-readable MLTL into an abstract syntax tree (AST).
+\end{itemize}
+
+\subsection{Unrolling}
+\begin{itemize}
+  \item Translates the AST into propositional logic over bounded time, suitable for Z3.
+  \item Provide a small worked example:
+    \begin{itemize}
+      \item Input: formula in MLTL syntax.
+      \item Step 1: AST representation.
+      \item Step 2: Propositional expansion.
+    \end{itemize}
+\end{itemize}
+
+\section{Integration with QuickXplain}
+\begin{itemize}
+  \item Explain how QuickXplain organizes satisfiability checks (SAT/UNSAT).
+  \item Show pseudocode or a flowchart of the QuickXplain loop.
+\end{itemize}
+
+\section{Z3 as a Satisfiability Oracle}
+\begin{itemize}
+  \item Justify the choice of Z3: established, efficient, widely used.
+  \item Describe input requirements: propositional formulas.
+  \item Explain output: Z3 returns either SAT or UNSAT.
+\end{itemize}
+
+\section{Output: Results to the User}
+\begin{itemize}
+  \item Case 1: All requirements are satisfiable $\rightarrow$ return ``SAT.''
+  \item Case 2: Requirements are unsatisfiable $\rightarrow$ return unsat core (minimal conflicting subset).
+\end{itemize}
+
+This output sets the stage for Chapter~4 (Methodology), where unsat cores are refined into minimal variable + timestep explanations.
+
 
 \chapter{Methodology: Minimal Explanations}
 \begin{itemize}
