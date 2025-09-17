@@ -10,7 +10,7 @@ This tool checks **MLTL (Mission-Time Linear Temporal Logic)** formulas for unsa
 2. **Clone the repository**  
    ```sh
    git clone <repository-url>
-   cd unsat-cores-mltl/tool
+   cd unsat-cores-mltl
    ```
 
 3. **Install dependencies**
@@ -86,3 +86,4 @@ This should open your the frontend interface in your default browser.
 **Frontend not showing results:** Ensure the backend server is running and the URL in the fetch request points to http://localhost:3000/check.
 
 **Syntax errors:** Check your MLTL formulas for correct brackets, operators, and variable names.
+
