@@ -1,0 +1,12 @@
+{
+  "name": "mltl-unsat-core-tool",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "z3-solver": "^4.12.2" 
+  }
+}
