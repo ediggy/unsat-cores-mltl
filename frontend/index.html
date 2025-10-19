@@ -4,11 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Minimal Unsatisfiable Core Extractor for MLTL</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script type="module" src="script.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 2rem;
-      max-width: 700px;
+      max-width: 900px;
     }
     textarea {
       width: 100%;
@@ -28,36 +31,40 @@
       background: #f9f9f9;
       white-space: pre-wrap;
     }
+    #plotContainer {
+      margin-top: 2rem;
+      width: 100%;
+      height: 80vh;
+      border: 1px solid #ccc;
+    }
   </style>
-  <script type="module" src="script.js"></script>
 </head>
-<body>
 
+<body>
   <h1>Minimal Unsatisfiable Core Extractor for MLTL</h1>
 
-  <p>
-    Enter one MLTL formula per line. Each formula can use:
-  </p>
-  <ul>
-    <li><code>F[i,j]φ</code></li>
-    <li><code>G[i,j]φ</code></li>
-    <li><code>φ U[i,j] ψ</code></li>
-    <li><code>φ R[i,j] ψ</code></li>
-  </ul>
-  <p>
-    Variables (<code>a</code>, <code>b</code>, …) may be combined with
-    <code>!</code>, <code>&amp;</code>, <code>|</code>, and parentheses.
-    <br>
-    Example: <code>a R[5,6] (b | (F[0,1] c))</code>
-  </p>
-
-  <label for="formulaInput"><strong>MLTL Formulas:</strong></label>
+  <p>Enter one MLTL formula per line:</p>
   <textarea id="formulaInput" placeholder="One formula per line"></textarea>
-
   <button id="checkBtn">Check Unsatisfiability</button>
 
   <div id="output">Results will appear here.</div>
 
+  <h2>Custom Timeline Input</h2>
+  <p>Enter CSV data for boolean variables. First line must start with <code>#</code> for headers, then values 0 or 1 per timestep:</p>
 
+  <textarea id="timelineInput" 
+  placeholder="# a,b,c,d
+1,0,1,0
+0,1,1,0"></textarea>
+
+
+  <button id="renderTimelineBtn">Render Timeline</button>
+  <div style="display:flex; gap:20px;">
+  <div id="plotContainer" style="width:900px; height:700px;"></div>
+  <div id="hoverInfo" style="flex-shrink:0; width:200px; height:700px; border:1px solid #ccc; padding:10px; overflow:auto;">
+    <h3>True Variables at timestep <span id="timestepVar">N/A</span></h3>
+    <ul id="trueVarsList"></ul>
+  </div>
+</div>
 </body>
 </html>
